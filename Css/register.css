@@ -1,0 +1,102 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.registro div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.registro div label,
+.registro div input {
+    display: block;
+}
+
+/* Ajustes para nombre y apellido en la misma línea */
+.registro .nombre-apellido {
+    display: flex;
+    justify-content: space-between;
+}
+
+.registro .nombre-apellido > div {
+    flex: 1;
+}
+
+.registro .nombre-apellido > div:first-child {
+    margin-right: 10px;
+}
+
+/* Ajustes para el correo electrónico solo */
+.registro .correo {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ajustes para contraseña y confirmar contraseña juntos */
+.registro .passwords {
+    display: flex;
+    justify-content: space-between;
+}
+
+.registro .passwords > div {
+    flex: 1;
+}
+
+.registro .passwords > div:first-child {
+    margin-right: 10px;
+}
+
+/* Ajustes para las preguntas de seguridad */
+.registro .pregunta-seguridad {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 600px) {
+    .registro .nombre-apellido,
+    .registro .passwords {
+        flex-direction: column;
+    }
+
+    .registro .nombre-apellido > div,
+    .registro .passwords > div {
+        width: 100%;
+        margin-right: 0;
+    }
+}
+
+form {
+    background: #fff;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    animation: fadeIn 0.8s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

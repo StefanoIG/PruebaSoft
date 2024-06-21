@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="../Css/login.css">
+    <!-- Agregar SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="../Js/general.js"></script>
+</head>
+<body>
+    <h2>Iniciar Sesión</h2>
+    <form id="loginForm" method="POST">
+        <label for="correo">Correo electrónico:</label><br>
+        <input type="email" id="correo" name="correo" required><br><br>
+
+        <label for="password">Contraseña:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+
+    <button onclick="olvidasteContrasena(event)">¿Olvidaste tu contraseña?</button>
+
+        <input type="submit" value="Iniciar Sesión">
+    </form>
+
+
+    <script>
+
+        // Manejador del formulario
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const correo = document.getElementById('correo').value;
+            const password = document.getElementById('password').value;
+
+            // Enviar datos del formulario usando AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '../Post/Auth/procesar_login.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        mostrarToast('success', '¡Inicio de sesión exitoso!');
+                        setTimeout(() => {
+                            window.location.href = response.redirect;
+                        }, 3000);
+                    } else {
+                        mostrarToast('error', response.message);
+                    }
+                }
+            };
+            xhr.send(`correo=${encodeURIComponent(correo)}&password=${encodeURIComponent(password)}`);
+        });
+
+
+
+
+    function olvidasteContrasena(event) {
+    // Mostrar la alerta de SweetAlert2
+    event.preventDefault();
+    Swal.fire({
+        title: '¿Olvidaste tu contraseña?',
+        html: '<input id="swal-input1" class="swal2-input" placeholder="Correo electrónico">',
+        focusConfirm: false,
+        preConfirm: () => {
+            const email = Swal.getPopup().querySelector('#swal-input1').value;
+            if (!email) {
+                Swal.showValidationMessage('Por favor, ingresa tu correo electrónico');
+            }
+            // Enviar el correo electrónico al servidor para verificar si existe en la base de datos
+            // mediante AJAX
+            verificarCorreo(email);
+        }
+    });
+}
+
+function verificarCorreo(email) {
+    // Realizar la solicitud AJAX al servidor para verificar el correo electrónico
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '../Post/Auth/verificar_correo.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Procesar la respuesta del servidor
+            console.log(xhr.responseText);
+            var response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                // Si el correo existe, solicitar el código de seguridad al usuario
+                Swal.fire({
+                    title: 'Ponga su código de seguridad',
+                    input: 'text',
+                    inputAttributes: {
+                        autocapitalize: 'off'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: 'Verificar',
+                    cancelButtonText: 'Olvidé el código', // Botón adicional para olvidar el código
+                    showLoaderOnConfirm: true,
+                    preConfirm: (codigoSeguridad) => {
+                        // Realizar la verificación del código de seguridad mediante AJAX
+                        verificarCodigoSeguridad(email, codigoSeguridad); // Cambiado 'correo' por 'email'
+                    }
+                }).then((result) => {
+                    // Si el usuario hace clic en "Olvidé el código", llamar a la función preguntas
+                    if (result.dismiss === Swal.DismissReason.cancel) {
+                        preguntas(email); // Cambiado 'correo' por 'email'
+                    }
+                });
+            } else {
+                // Si el correo no existe, mostrar un mensaje de error
+                Swal.fire('Error', response.mensaje, 'error');
+            }
+        }
+    };
+    // Enviar los datos al servidor
+    xhr.send('email=' + encodeURIComponent(email)); // Cambiado 'correo' por 'email' y agregado encodeURIComponent para codificar correctamente el email
+}
+
+
+
+
+function verificarCodigoSeguridad(email, codigoSeguridad) {
+    // Realizar la solicitud AJAX al servidor para verificar el código de seguridad
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '../Post/Auth/verificar_codigo_seguridad.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Procesar la respuesta del servidor
+            console.log(xhr.responseText);
+            var response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                // Mostrar mensaje de éxito si el código de seguridad es correcto
+                Swal.fire('Éxito', '¡Código de seguridad correcto!', 'success').then((result) => {
+                    if (result.isConfirmed) {
+                        // Llamar a la función para actualizar la contraseña
+                        actualizarContrasena(email);
+                    }
+                });
+            } else {
+                // Mostrar mensaje de error si el código de seguridad es incorrecto
+                Swal.fire('Error', response.mensaje, 'error');
+            }
+        }
+    };
+    // Enviar los datos al servidor
+    xhr.send('email=' + email + '&codigoSeguridad=' + codigoSeguridad);
+}
+
+function actualizarContrasena(email) {
+    // Mostrar una alerta con dos inputs para ingresar la nueva contraseña
+    Swal.fire({
+        title: 'Actualizar contraseña',
+        html: `
+            <input id="nuevaContrasena" class="swal2-input" type="password" placeholder="Nueva contraseña" required>
+            <input id="repetirContrasena" class="swal2-input" type="password" placeholder="Repetir contraseña" required>
+            <p id="errorMensaje" style="color: red; display: none;">Las contraseñas no coinciden o están vacías.</p>
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+            const nuevaContrasena = document.getElementById('nuevaContrasena').value;
+            const repetirContrasena = document.getElementById('repetirContrasena').value;
+
+            // Validar si las contraseñas coinciden
+            if (nuevaContrasena !== repetirContrasena || nuevaContrasena === '') {
+                document.getElementById('errorMensaje').style.display = 'block';
+                return false; // Evitar que se cierre la alerta si hay errores
+            }
+
+            // Realizar la solicitud AJAX al servidor para actualizar la contraseña
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '../Post/Auth/actualizar_contrasena.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Procesar la respuesta del servidor
+                    console.log(xhr.responseText);
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Mostrar mensaje de éxito si la contraseña se actualizó correctamente
+                        Swal.fire('Éxito', '¡Contraseña actualizada correctamente!', 'success');
+                    } else {
+                        // Mostrar mensaje de error si hubo un problema al actualizar la contraseña
+                        Swal.fire('Error', response.mensaje, 'error');
+                    }
+                }
+            };
+            // Enviar los datos al servidor
+            xhr.send('email=' + email + '&nuevaContrasena=' + nuevaContrasena);
+        }
+    });
+}
+
+
+function preguntas(email) {
+    // Mostrar preguntas de seguridad y campos para respuestas
+    //console.log("Email enviado para preguntas de seguridad: " + email);
+    Swal.fire({
+        title: 'Preguntas de Seguridad',
+        html: `
+            <div>
+                <label for="respuesta1">Pregunta de Seguridad 1: ¿Cuál es el nombre de tu mascota?</label>
+                <input id="respuesta1" class="swal2-input" type="text" required>
+            </div>
+            <div>
+                <label for="respuesta2">Pregunta de Seguridad 2: ¿Cuál es tu comida favorita?</label>
+                <input id="respuesta2" class="swal2-input" type="text" required>
+            </div>
+            <div>
+                <label for="respuesta3">Pregunta de Seguridad 3: ¿En qué ciudad naciste?</label>
+                <input id="respuesta3" class="swal2-input" type="text" required>
+            </div>
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+            const respuesta1 = Swal.getPopup().querySelector('#respuesta1').value;
+            const respuesta2 = Swal.getPopup().querySelector('#respuesta2').value;
+            const respuesta3 = Swal.getPopup().querySelector('#respuesta3').value;
+            // Realizar la solicitud AJAX al servidor para verificar las respuestas de seguridad
+            verificarRespuestas(email, respuesta1, respuesta2, respuesta3);
+            
+        }
+    });
+}
+
+function verificarRespuestas(email, respuesta1, respuesta2, respuesta3) {
+    // Realizar la solicitud AJAX al servidor para verificar las respuestas de seguridad
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '../Post/Authverificar_respuestas.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Procesar la respuesta del servidor
+            console.log(xhr.responseText);
+            var response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                // Si las respuestas son correctas, llamar a la función para actualizar la contraseña
+                actualizarContrasena(email);
+            } else {
+                // Mostrar mensaje de error si las respuestas son incorrectas
+                Swal.fire('Error', response.mensaje, 'error');
+            }
+        }
+    };
+    // Enviar los datos al servidor
+    xhr.send('email=' + email + '&respuesta1=' + respuesta1 + '&respuesta2=' + respuesta2 + '&respuesta3=' + respuesta3);
+}
+
+
+    
+    </script>
+</body>
+</html>

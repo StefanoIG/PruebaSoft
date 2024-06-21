@@ -1,0 +1,109 @@
+/* Estilos para las secciones específicas */
+header {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background-color: #f3f3f3;
+    border-bottom: 2px solid #ddd;
+}
+
+button{
+    
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+header button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+header .btn{
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+}
+
+header button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+#filtrosForm {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-bottom: 2px solid #eee;
+}
+
+#filtrosForm input[type=text], #filtrosForm select {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+section {
+    padding: 20px;
+}
+
+section h3 {
+    color: #333;
+}
+
+.departamento-imagen {
+    max-height: 200px; /* Ajuste de la altura máxima de las imágenes */
+    object-fit: cover; /* Asegura que la imagen cubra el contenedor */
+}
+
+
+.departamento-container {
+    float: left;
+    width: 30%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.departamento {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.departamento img {
+    width: 100%;
+    height: auto;
+}
+
+a{
+    text-decoration: none;
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .departamento-container {
+        width: 100%;
+    }
+}
+
+
